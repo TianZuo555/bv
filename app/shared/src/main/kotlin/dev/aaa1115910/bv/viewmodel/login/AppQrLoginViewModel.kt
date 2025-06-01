@@ -38,7 +38,7 @@ class AppQrLoginViewModel(
 ) : ViewModel() {
     var state by mutableStateOf(QrLoginState.Ready)
     private val logger = KotlinLogging.logger { }
-    private var loginUrl by mutableStateOf("")
+    var loginUrl by mutableStateOf("")
     var qrImage by mutableStateOf(ImageBitmap(1, 1, ImageBitmapConfig.Argb8888))
     private var key = ""
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
+    <string name="qr_login_button_login">二维码登录</string>
     <string name="qr_token_result_button_add_user">添加用户</string>
     <string name="qr_token_result_toast_add_success">添加成功</string>
 

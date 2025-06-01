@@ -1,16 +1,22 @@
 package dev.aaa1115910.bv.mobile.screen
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,8 +28,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,10 +57,14 @@ import com.geetest.sdk.GT3ConfigBean
 import com.geetest.sdk.GT3ErrorBean
 import com.geetest.sdk.GT3GeetestUtils
 import com.geetest.sdk.GT3Listener
+import dev.aaa1115910.biliapi.entity.login.QrLoginState
 import dev.aaa1115910.biliapi.repositories.SendSmsState
 import dev.aaa1115910.bv.R
+import dev.aaa1115910.bv.component.QrImage
 import dev.aaa1115910.bv.mobile.theme.BVMobileTheme
+import dev.aaa1115910.bv.util.calculateWindowSizeClassInPreview
 import dev.aaa1115910.bv.util.toast
+import dev.aaa1115910.bv.viewmodel.login.AppQrLoginViewModel
 import dev.aaa1115910.bv.viewmodel.login.GeetestResult
 import dev.aaa1115910.bv.viewmodel.login.SmsLoginViewModel
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -58,16 +74,18 @@ import kotlinx.serialization.json.Json
 import org.json.JSONObject
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    smsLoginViewModel: SmsLoginViewModel = koinViewModel()
+    smsLoginViewModel: SmsLoginViewModel = koinViewModel(),
+    appQrLoginViewModel: AppQrLoginViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
     val logger = KotlinLogging.logger { }
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val windowSize = calculateWindowSizeClass(context as Activity)
 
     var gt3GeetestUtils: GT3GeetestUtils? by remember { mutableStateOf(null) }
     val gt3ConfigBean by remember { mutableStateOf(GT3ConfigBean()) }
@@ -176,6 +194,53 @@ fun LoginScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        appQrLoginViewModel.requestQRCode()
+    }
+
+    LaunchedEffect(appQrLoginViewModel.state) {
+        when (appQrLoginViewModel.state) {
+            QrLoginState.Success -> {
+                R.string.login_success.toast(context)
+                context.finish()
+            }
+
+            QrLoginState.Expired -> {
+                appQrLoginViewModel.requestQRCode()
+            }
+
+            else -> {}
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            appQrLoginViewModel.cancelCheckLoginResultTimer()
+        }
+    }
+
+    LoginContent(
+        modifier = modifier,
+        windowSize = windowSize,
+        qrLoginUrl = appQrLoginViewModel.loginUrl,
+        onBack = { context.finish() },
+        onClearCaptchaData = { smsLoginViewModel.clearCaptchaData() },
+        onSendSms = sendSms,
+        onLogin = loginWithSms
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LoginContent(
+    modifier: Modifier = Modifier,
+    windowSize: WindowSizeClass,
+    qrLoginUrl: String,
+    onBack: () -> Unit,
+    onClearCaptchaData: () -> Unit,
+    onSendSms: (Long) -> Unit,
+    onLogin: (phoneNumber: Long, code: Int) -> Unit
+) {
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -184,26 +249,123 @@ fun LoginScreen(
                     Text(text = stringResource(id = R.string.title_mobile_activity_login))
                 },
                 navigationIcon = {
-                    IconButton(onClick = { (context as Activity).finish() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+        when (windowSize.widthSizeClass) {
+            WindowWidthSizeClass.Compact, WindowWidthSizeClass.Medium -> LoginContentCompact(
+                modifier = Modifier.padding(innerPadding),
+                qrLoginUrl = qrLoginUrl,
+                onClearCaptchaData = onClearCaptchaData,
+                onSendSms = onSendSms,
+                onLogin = onLogin
+            )
+
+            WindowWidthSizeClass.Expanded -> LoginContentExpanded(
+                modifier = Modifier.padding(innerPadding),
+                qrLoginUrl = qrLoginUrl,
+                onClearCaptchaData = onClearCaptchaData,
+                onSendSms = onSendSms,
+                onLogin = onLogin
+            )
+        }
+    }
+}
+
+@Composable
+fun LoginContentCompact(
+    modifier: Modifier = Modifier,
+    qrLoginUrl: String,
+    onClearCaptchaData: () -> Unit,
+    onSendSms: (Long) -> Unit,
+    onLogin: (phoneNumber: Long, code: Int) -> Unit
+) {
+    var showQrCode by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column {
-                SmsLoginInputs(
-                    modifier = Modifier.padding(24.dp),
-                    onClearCaptchaData = { smsLoginViewModel.clearCaptchaData() },
-                    onSendSms = sendSms,
-                    onLogin = loginWithSms
+            SmsLoginInputs(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .widthIn(max = 400.dp),
+                onClearCaptchaData = onClearCaptchaData,
+                onSendSms = onSendSms,
+                onLogin = onLogin
+            )
+            AnimatedVisibility(showQrCode) {
+                QrImage(
+                    modifier = Modifier
+                        .padding(top = 36.dp)
+                        .size(240.dp),
+                    content = qrLoginUrl
                 )
             }
+        }
+        if (!showQrCode) {
+            TextButton(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                onClick = { showQrCode = true }
+            ) {
+                Text(text = stringResource(dev.aaa1115910.bv.mobile.R.string.qr_login_button_login))
+            }
+        }
+    }
+}
+
+@Composable
+fun LoginContentExpanded(
+    modifier: Modifier = Modifier,
+    qrLoginUrl: String,
+    onClearCaptchaData: () -> Unit,
+    onSendSms: (Long) -> Unit,
+    onLogin: (phoneNumber: Long, code: Int) -> Unit
+) {
+    Row(
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            SmsLoginInputs(
+                modifier = Modifier
+                    .width(400.dp),
+                onClearCaptchaData = onClearCaptchaData,
+                onSendSms = onSendSms,
+                onLogin = onLogin
+            )
+        }
+        VerticalDivider(
+            modifier = Modifier
+                .fillMaxHeight(0.5f)
+                .align(Alignment.CenterVertically)
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            QrLogin(
+                modifier = Modifier,
+                qrLoginUrl = qrLoginUrl
+            )
+
         }
     }
 }
@@ -307,6 +469,21 @@ fun SmsLoginInputs(
     }
 }
 
+@Composable
+fun QrLogin(
+    modifier: Modifier = Modifier,
+    qrLoginUrl: String
+) {
+    Box(
+        modifier = modifier
+    ) {
+        QrImage(
+            modifier = Modifier.size(240.dp),
+            content = qrLoginUrl
+        )
+    }
+}
+
 @Preview
 @Composable
 fun SmsLoginInputsPreview() {
@@ -319,5 +496,26 @@ fun SmsLoginInputsPreview() {
                 onLogin = { _, _ -> }
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@Preview
+@Preview(device = "spec:width=1280dp,height=800dp,dpi=240")
+@Preview(device = "spec:width=1280dp,height=800dp,dpi=240,orientation=portrait")
+@Composable
+private fun LoginScreenPreview() {
+    val windowSize = calculateWindowSizeClassInPreview()
+
+    BVMobileTheme {
+        LoginContent(
+            modifier = Modifier,
+            windowSize = windowSize,
+            qrLoginUrl = "https://www.example.com",
+            onBack = {},
+            onClearCaptchaData = {},
+            onSendSms = { _ -> },
+            onLogin = { _, _ -> }
+        )
     }
 }
