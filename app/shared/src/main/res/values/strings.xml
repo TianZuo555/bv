@@ -666,7 +666,7 @@
     <string name="user_switch_button_exit_manage_account">退出管理</string>
     <string name="user_switch_button_manage_account">管理账号</string>
     <string name="user_switch_menu_delete_account">移除账号</string>
-    <string name="user_switch_menu_show_token">显示 Token</string>
+    <string name="user_switch_menu_show_token">显示用户凭证</string>
     <string name="user_switch_menu_user_lock">用户锁设置</string>
     <string name="user_switch_title">选择账号</string>
 
