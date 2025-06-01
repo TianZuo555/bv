@@ -11,10 +11,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -26,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,11 +47,8 @@ import com.geetest.sdk.GT3GeetestUtils
 import com.geetest.sdk.GT3Listener
 import dev.aaa1115910.biliapi.repositories.SendSmsState
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.entity.AuthData
 import dev.aaa1115910.bv.mobile.theme.BVMobileTheme
-import dev.aaa1115910.bv.repository.UserRepository
 import dev.aaa1115910.bv.util.toast
-import dev.aaa1115910.bv.viewmodel.UserViewModel
 import dev.aaa1115910.bv.viewmodel.login.GeetestResult
 import dev.aaa1115910.bv.viewmodel.login.SmsLoginViewModel
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -63,7 +57,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.getKoin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,8 +72,6 @@ fun LoginScreen(
     var gt3GeetestUtils: GT3GeetestUtils? by remember { mutableStateOf(null) }
     val gt3ConfigBean by remember { mutableStateOf(GT3ConfigBean()) }
     var phone by remember { mutableLongStateOf(0) }
-
-    var showCookiesLoginDialog by remember { mutableStateOf(false) }
 
     val setConfig: (challenge: String, gt: String) -> Unit = { challenge, gt ->
         gt3GeetestUtils!!.startCustomFlow()
@@ -213,19 +204,8 @@ fun LoginScreen(
                     onLogin = loginWithSms
                 )
             }
-            TextButton(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                onClick = { showCookiesLoginDialog = true }
-            ) {
-                Text(text = "身份凭证登录")
-            }
         }
     }
-
-    AuthDataLoginDialog(
-        show = showCookiesLoginDialog,
-        onHideDialog = { showCookiesLoginDialog = false }
-    )
 }
 
 @Composable
@@ -339,70 +319,5 @@ fun SmsLoginInputsPreview() {
                 onLogin = { _, _ -> }
             )
         }
-    }
-}
-
-@Composable
-private fun AuthDataLoginDialog(
-    modifier: Modifier = Modifier,
-    show: Boolean,
-    onHideDialog: () -> Unit,
-    userRepository: UserRepository = getKoin().get(),
-    userViewModel: UserViewModel = getKoin().get()
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var inputText by remember { mutableStateOf("") }
-
-    LaunchedEffect(show) {
-        if (show) {
-            inputText = ""
-        }
-    }
-
-    val parseCookies: (String) -> Unit = { json ->
-        runCatching {
-            scope.launch(Dispatchers.IO) {
-                val authData = Json.decodeFromString<AuthData>(json)
-                userRepository.addUser(authData)
-                userViewModel.updateUserInfo()
-            }
-        }.onFailure {
-            println(it.stackTraceToString())
-            "无法解析".toast(context)
-        }.onSuccess {
-            "保存成功".toast(context)
-            onHideDialog()
-            (context as Activity).finish()
-        }
-    }
-
-    if (show) {
-        AlertDialog(
-            modifier = modifier,
-            onDismissRequest = onHideDialog,
-            title = { Text(text = "身份凭证登录") },
-            text = {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = inputText,
-                    onValueChange = { inputText = it },
-                    label = { Text(text = "身份凭证") },
-                    minLines = 5,
-                    maxLines = 5,
-                    shape = MaterialTheme.shapes.medium
-                )
-            },
-            confirmButton = {
-                FilledTonalButton(onClick = { parseCookies(inputText) }) {
-                    Text(text = stringResource(id = android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onHideDialog) {
-                    Text(text = stringResource(id = android.R.string.cancel))
-                }
-            }
-        )
     }
 }
