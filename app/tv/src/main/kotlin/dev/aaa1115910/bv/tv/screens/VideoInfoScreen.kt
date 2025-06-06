@@ -133,6 +133,7 @@ import dev.aaa1115910.bv.util.fWarn
 import dev.aaa1115910.bv.util.focusedBorder
 import dev.aaa1115910.bv.util.formatPubTimeString
 import dev.aaa1115910.bv.util.ifElse
+import dev.aaa1115910.bv.util.onBackPressed
 import dev.aaa1115910.bv.util.requestFocus
 import dev.aaa1115910.bv.util.swapList
 import dev.aaa1115910.bv.util.swapListWithMainContext
@@ -1311,6 +1312,7 @@ private fun VideoPartListDialog(
     val tabCount by remember { mutableIntStateOf(ceil(pages.size / 20.0).toInt()) }
     val selectedVideoPart = remember { mutableStateListOf<VideoPage>() }
 
+    val tabFocusRequester = remember { FocusRequester() }
     val tabRowFocusRequester = remember { FocusRequester() }
     val videoListFocusRequester = remember { FocusRequester() }
     val listState = rememberLazyGridState()
@@ -1325,7 +1327,7 @@ private fun VideoPartListDialog(
     }
 
     LaunchedEffect(show) {
-        if (show && tabCount > 1) tabRowFocusRequester.requestFocus(scope)
+        if (show && tabCount > 1) tabFocusRequester.requestFocus(scope)
         if (show && tabCount == 1) videoListFocusRequester.requestFocus(scope)
     }
 
@@ -1349,14 +1351,16 @@ private fun VideoPartListDialog(
                                         listState.scrollToItem(0)
                                     }
                                 }
-                            },
+                            }
+                            .focusRestorer()
+                            .focusRequester(tabRowFocusRequester),
                         selectedTabIndex = selectedTabIndex,
                         separator = { Spacer(modifier = Modifier.width(12.dp)) },
                     ) {
                         for (i in 0 until tabCount) {
                             Tab(
                                 modifier = if (i == 0) Modifier.focusRequester(
-                                    tabRowFocusRequester
+                                    tabFocusRequester
                                 ) else Modifier,
                                 selected = i == selectedTabIndex,
                                 onFocus = { selectedTabIndex = i },
@@ -1375,6 +1379,10 @@ private fun VideoPartListDialog(
                     }
 
                     LazyVerticalGrid(
+                        modifier = Modifier
+                            .onBackPressed {
+                                if (tabCount > 1) tabRowFocusRequester.requestFocus() else onHideDialog()
+                            },
                         state = listState,
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(8.dp),
@@ -1390,7 +1398,7 @@ private fun VideoPartListDialog(
 
                             VideoPartButton(
                                 modifier = buttonModifier,
-                                index = index + 1,
+                                index = page.index,
                                 title = page.title,
                                 played = 0,
                                 duration = page.duration,
@@ -1419,6 +1427,7 @@ private fun VideoUgcListDialog(
     val tabCount by remember { mutableIntStateOf(ceil(episodes.size / 20.0).toInt()) }
     val selectedVideoPart = remember { mutableStateListOf<Episode>() }
 
+    val tabFocusRequester = remember { FocusRequester() }
     val tabRowFocusRequester = remember { FocusRequester() }
     val videoListFocusRequester = remember { FocusRequester() }
     val listState = rememberLazyGridState()
@@ -1433,7 +1442,7 @@ private fun VideoUgcListDialog(
     }
 
     LaunchedEffect(show) {
-        if (show && tabCount > 1) tabRowFocusRequester.requestFocus(scope)
+        if (show && tabCount > 1) tabFocusRequester.requestFocus(scope)
         if (show && tabCount == 1) videoListFocusRequester.requestFocus(scope)
     }
 
@@ -1457,14 +1466,16 @@ private fun VideoUgcListDialog(
                                         listState.scrollToItem(0)
                                     }
                                 }
-                            },
+                            }
+                            .focusRestorer()
+                            .focusRequester(tabRowFocusRequester),
                         selectedTabIndex = selectedTabIndex,
                         separator = { Spacer(modifier = Modifier.width(12.dp)) },
                     ) {
                         for (i in 0 until tabCount) {
                             Tab(
                                 modifier = if (i == 0) Modifier.focusRequester(
-                                    tabRowFocusRequester
+                                    tabFocusRequester
                                 ) else Modifier,
                                 selected = i == selectedTabIndex,
                                 onFocus = { selectedTabIndex = i },
@@ -1483,6 +1494,10 @@ private fun VideoUgcListDialog(
                     }
 
                     LazyVerticalGrid(
+                        modifier = Modifier
+                            .onBackPressed {
+                                if (tabCount > 1) tabRowFocusRequester.requestFocus() else onHideDialog()
+                            },
                         state = listState,
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(8.dp),
@@ -1498,7 +1513,8 @@ private fun VideoUgcListDialog(
 
                             VideoPartButton(
                                 modifier = buttonModifier,
-                                index = index + 1,
+                                index = selectedTabIndex * 20 + index + 1,
+                                type = VideoPartType.Episode,
                                 title = episode.title,
                                 played = 0,
                                 duration = episode.duration,
