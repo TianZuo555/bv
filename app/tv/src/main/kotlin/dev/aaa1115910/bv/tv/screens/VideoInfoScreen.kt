@@ -39,7 +39,6 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.ViewModule
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -111,9 +110,6 @@ import dev.aaa1115910.biliapi.http.BiliPlusHttpApi
 import dev.aaa1115910.biliapi.repositories.FavoriteRepository
 import dev.aaa1115910.biliapi.repositories.UserRepository
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.tv.component.UpIcon
-import dev.aaa1115910.bv.tv.component.buttons.FavoriteButton
-import dev.aaa1115910.bv.tv.component.videocard.VideosRow
 import dev.aaa1115910.bv.entity.proxy.ProxyArea
 import dev.aaa1115910.bv.player.entity.VideoListItem
 import dev.aaa1115910.bv.player.entity.VideoListPart
@@ -124,6 +120,10 @@ import dev.aaa1115910.bv.tv.activities.video.SeasonInfoActivity
 import dev.aaa1115910.bv.tv.activities.video.TagActivity
 import dev.aaa1115910.bv.tv.activities.video.UpInfoActivity
 import dev.aaa1115910.bv.tv.activities.video.VideoInfoActivity
+import dev.aaa1115910.bv.tv.component.TvAlertDialog
+import dev.aaa1115910.bv.tv.component.UpIcon
+import dev.aaa1115910.bv.tv.component.buttons.FavoriteButton
+import dev.aaa1115910.bv.tv.component.videocard.VideosRow
 import dev.aaa1115910.bv.tv.util.launchPlayerActivity
 import dev.aaa1115910.bv.ui.theme.BVTheme
 import dev.aaa1115910.bv.util.Prefs
@@ -1014,7 +1014,7 @@ fun VideoDescriptionDialog(
     }
 
     if (show) {
-        AlertDialog(
+        TvAlertDialog(
             modifier = modifier
                 .fillMaxWidth(0.8f),
             onDismissRequest = { onHideDialog() },
@@ -1332,7 +1332,7 @@ private fun VideoPartListDialog(
     }
 
     if (show) {
-        AlertDialog(
+        TvAlertDialog(
             modifier = modifier,
             title = { Text(text = title) },
             onDismissRequest = { onHideDialog() },
@@ -1447,7 +1447,7 @@ private fun VideoUgcListDialog(
     }
 
     if (show) {
-        AlertDialog(
+        TvAlertDialog(
             modifier = modifier,
             title = { Text(text = title) },
             onDismissRequest = { onHideDialog() },

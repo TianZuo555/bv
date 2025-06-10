@@ -37,7 +37,6 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ViewModule
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -92,11 +91,12 @@ import coil.compose.AsyncImage
 import dev.aaa1115910.biliapi.entity.video.season.Episode
 import dev.aaa1115910.biliapi.entity.video.season.PgcSeason
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.tv.component.buttons.SeasonInfoButtons
 import dev.aaa1115910.bv.entity.proxy.ProxyArea
 import dev.aaa1115910.bv.player.entity.VideoListPgcEpisode
 import dev.aaa1115910.bv.repository.VideoInfoRepository
 import dev.aaa1115910.bv.tv.activities.video.VideoInfoActivity
+import dev.aaa1115910.bv.tv.component.TvAlertDialog
+import dev.aaa1115910.bv.tv.component.buttons.SeasonInfoButtons
 import dev.aaa1115910.bv.tv.util.launchPlayerActivity
 import dev.aaa1115910.bv.ui.theme.BVTheme
 import dev.aaa1115910.bv.util.ImageSize
@@ -686,7 +686,7 @@ fun SeasonEpisodesDialog(
     }
 
     if (show) {
-        AlertDialog(
+        TvAlertDialog(
             modifier = modifier,
             title = { Text(text = title) },
             onDismissRequest = { onHideDialog() },
