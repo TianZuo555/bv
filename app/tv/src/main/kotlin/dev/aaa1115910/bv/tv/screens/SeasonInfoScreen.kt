@@ -92,7 +92,7 @@ import coil.compose.AsyncImage
 import dev.aaa1115910.biliapi.entity.video.season.Episode
 import dev.aaa1115910.biliapi.entity.video.season.PgcSeason
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.component.buttons.SeasonInfoButtons
+import dev.aaa1115910.bv.tv.component.buttons.SeasonInfoButtons
 import dev.aaa1115910.bv.entity.proxy.ProxyArea
 import dev.aaa1115910.bv.player.entity.VideoListPgcEpisode
 import dev.aaa1115910.bv.repository.VideoInfoRepository

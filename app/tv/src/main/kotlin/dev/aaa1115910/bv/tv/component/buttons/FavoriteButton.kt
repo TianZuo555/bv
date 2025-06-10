@@ -1,4 +1,4 @@
-package dev.aaa1115910.bv.component.buttons
+package dev.aaa1115910.bv.tv.component.buttons
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility

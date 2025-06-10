@@ -111,9 +111,9 @@ import dev.aaa1115910.biliapi.http.BiliPlusHttpApi
 import dev.aaa1115910.biliapi.repositories.FavoriteRepository
 import dev.aaa1115910.biliapi.repositories.UserRepository
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.component.UpIcon
-import dev.aaa1115910.bv.component.buttons.FavoriteButton
-import dev.aaa1115910.bv.component.videocard.VideosRow
+import dev.aaa1115910.bv.tv.component.UpIcon
+import dev.aaa1115910.bv.tv.component.buttons.FavoriteButton
+import dev.aaa1115910.bv.tv.component.videocard.VideosRow
 import dev.aaa1115910.bv.entity.proxy.ProxyArea
 import dev.aaa1115910.bv.player.entity.VideoListItem
 import dev.aaa1115910.bv.player.entity.VideoListPart

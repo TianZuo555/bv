@@ -34,8 +34,9 @@ import dev.aaa1115910.biliapi.http.BiliHttpProxyApi
 import dev.aaa1115910.biliapi.repositories.ChannelRepository
 import dev.aaa1115910.bv.BVApp
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.component.settings.SettingListItem
-import dev.aaa1115910.bv.component.settings.SettingSwitchListItem
+import dev.aaa1115910.bv.tv.component.settings.SettingListItem
+import dev.aaa1115910.bv.tv.component.settings.SettingSwitchListItem
+import dev.aaa1115910.bv.tv.activities.settings.SpeedTestActivity
 import dev.aaa1115910.bv.tv.screens.settings.SettingsMenuNavItem
 import dev.aaa1115910.bv.ui.theme.BVTheme
 import dev.aaa1115910.bv.util.Prefs
@@ -123,7 +124,7 @@ fun NetworkSetting(
                         title = stringResource(R.string.settings_network_test_title),
                         supportText = stringResource(R.string.settings_network_test_text),
                         onClick = {
-                            context.startActivity(Intent(context, dev.aaa1115910.bv.tv.activities.settings.SpeedTestActivity::class.java))
+                            context.startActivity(Intent(context, SpeedTestActivity::class.java))
                         }
                     )
                 }

@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.component.search.SearchKeyword
-import dev.aaa1115910.bv.component.search.SoftKeyboard
+import dev.aaa1115910.bv.tv.component.search.SearchKeyword
+import dev.aaa1115910.bv.tv.component.search.SoftKeyboard
 import dev.aaa1115910.bv.tv.activities.search.SearchResultActivity
 import dev.aaa1115910.bv.util.Prefs
 import dev.aaa1115910.bv.util.ifElse
